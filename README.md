@@ -1,7 +1,18 @@
+Bilygine is a small project based on Google AI services which allows you to search words in videos.
+
 # Prerequisites
 
 To start the full Bilygine Stack, you need a UNIX environment with JAVA 8+, docker 17+, and docker-compose 1.13+
 
+# Architecture
+![](https://gyazo.com/9c3f8d0a78f1d5b0e67f0faec3d89507.png)
+
+# UI Examples
+## Add new sources
+![](https://gyazo.com/ca6c66f566b98f16c75610e759fa3b96.png)
+
+## Research by occurences
+![](https://gyazo.com/dc6c12f8754585b2e854abada7987287.png)
 # How to start the bilygine stack
 
 ## Install
