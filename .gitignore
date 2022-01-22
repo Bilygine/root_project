@@ -1,0 +1,17 @@
+analyzer/
+downloader/
+rethinkdb/
+api_v2/
+credentials/
+socket-bridge/
+console/
+chronograf/
+kapacitor/
+telegraf/
+influxdb/
+api_gateway/
+mediator/
+bridge/
+
+.env
+acme.json*

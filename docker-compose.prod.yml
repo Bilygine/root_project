@@ -1,0 +1,99 @@
+version: '3'
+services:
+    traefik:
+        image: traefik
+        restart: always
+        ports:
+          - "80:80"
+          - "443:443"
+          - "8080"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - ./traefik/traefik.toml:/traefik.toml
+          - ./traefik/acme.json:/acme.json
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=monitor"
+            - "traefik.frontend.rule=Host:$MONITOR_PREFIX$BILYGINE_HOSTNAME"
+            - "traefik.port=8080"
+        env_file: .env
+    mediator:
+        ports:
+            - "5000"
+        volumes:
+            - cred:/credentials
+        environment:
+            - GOOGLE_APPLICATION_CREDENTIALS=/credentials/bilygine_google_credentials.json
+            - BUCKET_NAME=bilygine-audio
+            - FLASK_ENV=production
+    db:
+        ports:
+            - "8080"
+            - "29015"
+            - "28015"
+        volumes:
+            - ./rethinkdb:/data
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=db"
+            - "traefik.frontend.rule=Host:$DB_PREFIX$BILYGINE_HOSTNAME"
+            - "traefik.port=8080"
+    analyzer:
+        ports:
+            - "8123"
+        volumes:
+            - ./analyzer/analyzer-core/conf:/analyzer/conf/
+            - cred:/credentials
+        entrypoint: "java -cp analyzer.jar:lib/:conf/ com.bilygine.analyzer.Analyzer"
+
+    api:
+        ports:
+            - "8181"
+        volumes:
+            - cred:/credentials
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=api"
+            - "traefik.frontend.rule=Host:$API_PREFIX$BILYGINE_HOSTNAME"
+            - "traefik.port=8181"
+    sentiment:
+        ports:
+            - "5002:5002"
+        volumes:
+            - cred:/credentials
+    bridge:
+        ports:
+            - "5005"
+        environment:
+            - TIMEOUT_CONNECT=5000
+            - BRIDGE_HOST=bridge
+            - BRIDGE_PORT=5005
+            - RETHINKDB_HOST=db
+            - RETHINKDB_PORT=28015
+            - RETHINKDB_DATABASE=test
+        depends_on:
+            - db
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=bridge"
+            - "traefik.frontend.rule=Host:$BRIDGE_PREFIX$BILYGINE_HOSTNAME"
+            - "traefik.port=5005"
+    console:
+        environment:
+            - VUE_APP_API_SERVER=https://$API_PREFIX$BILYGINE_HOSTNAME
+            - VUE_APP_BRIDGE_SERVER=https://$BRIDGE_PREFIX$BILYGINE_HOSTNAME
+        ports:
+            - "8080"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=console"
+            - "traefik.frontend.rule=Host:$BILYGINE_HOSTNAME"
+            - "traefik.port=8080"
+        
+volumes:
+    cred:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/credentials
+            o: bind

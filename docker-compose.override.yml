@@ -1,0 +1,66 @@
+version: '3'
+services:
+    mediator:
+        ports:
+            - "5000:5000"
+        volumes:
+            - ./mediator:/usr/src/app
+            - cred:/credentials
+        environment:
+            - GOOGLE_APPLICATION_CREDENTIALS=/credentials/bilygine_google_credentials.json
+            - BUCKET_NAME=bilygine-audio
+            - FLASK_ENV=development
+    db:
+        ports:
+            - "8080:8080"
+            - "29015:29015"
+            - "28015:28015"
+        volumes:
+            - ./rethinkdb:/data
+
+    analyzer:
+        ports:
+            - "8123:8123"
+        volumes:
+            - ./analyzer/analyzer-core/conf:/analyzer/conf/
+            - cred:/credentials
+    api:
+        ports:
+            - "8181:8181"
+        volumes:
+            - ./api_gateway:/api
+            - cred:/credentials
+
+    sentiment:
+        ports:
+            - "5002:5002"
+        volumes:
+            - cred:/credentials
+    bridge:
+        ports:
+            - "5005:5005"
+        environment:
+            - TIMEOUT_CONNECT=5000
+            - BRIDGE_HOST=bridge
+            - BRIDGE_PORT=5005
+            - RETHINKDB_HOST=db
+            - RETHINKDB_PORT=28015
+            - RETHINKDB_DATABASE=test
+        depends_on:
+            - db
+    console:
+        environment:
+            - VUE_APP_API_SERVER=http://$BILYGINE_HOSTNAME:8181
+            - VUE_APP_BRIDGE_SERVER=http://$BILYGINE_HOSTNAME:5005
+        ports:
+            - "8081:8080"
+        volumes:
+            - ./console/src:/app/src
+        
+volumes:
+    cred:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/credentials
+            o: bind

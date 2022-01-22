@@ -1,0 +1,39 @@
+debug = true
+logLevel = "DEBUG"
+
+defaultEntryPoints = ["http", "https"]
+
+[web]
+# Port for the status/dashboard page
+address = ":8080"
+    [web.auth.basic]
+    users = ["admin:$apr1$3XcthPzS$Hbtb30LiY3sgDSBNgtSnm/"]
+
+[entryPoints]
+    [entryPoints.http]
+    address = ":80"
+      [entryPoints.http.redirect]
+      entryPoint = "https"
+    [entryPoints.https]
+    address = ":443"
+      [entryPoints.https.tls]
+
+[retry]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "bilygine.xyz"
+watch = true
+exposedByDefault = false
+
+[acme]
+email = "nico@nicoboss.me"
+storage = "acme.json"
+entryPoint = "https"
+  [acme.dnsChallenge]
+    provider = "ovh"
+    delayBeforeCheck = 30
+
+[[acme.domains]]
+  main = "*.bilygine.xyz"
+  sans = ["bilygine.xyz"]

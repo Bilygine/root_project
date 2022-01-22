@@ -1,0 +1,38 @@
+version: '3'
+services:
+    mediator:
+        image: mediator
+        build: ./mediator
+    db:
+        image: rethinkdb
+        ports:
+            - "8080"
+            - "29015"
+            - "28015"
+    analyzer:
+        image: analyzer
+        build: ./analyzer/analyzer-core
+
+    api:
+        image: api_gateway
+        build: ./api_gateway
+
+    sentiment:
+        image: sentiment
+        build: ./analyzer/analyzer-sentiment-analysis/google_implementation
+
+    bridge:
+        image: bridge
+        build: ./bridge
+
+    console:
+        image: console
+        build: ./console
+        
+volumes:
+    cred:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/credentials
+            o: bind
