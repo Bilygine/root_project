@@ -26,7 +26,7 @@ for i in ${repo[@]}; do
     echo -e "UPDATING $i SOURCE CODE"
     echo -e "###################\n"
     if [ ! -d "$i" ] ; then
-        git clone git@bitbucket.org:Bilygine/$i.git
+        git clone git@github.com:Bilygine/$i.git
     else
         cd $i
 	git fetch
